@@ -1,0 +1,106 @@
+<h1 id="cross-entropy-analysis-of-literary-texts">Cross Entropy Analysis
+of Literary Texts</h1>
+<h2 id="course-details">Course Details</h2>
+<ul>
+<li><strong>Course Code</strong>: COMP41730</li>
+<li><strong>Course Name</strong>: Generative AI</li>
+<li><strong>Student Name</strong>: Yash Singh Pathania</li>
+<li><strong>Student Number</strong>: 24204265</li>
+</ul>
+<p>This document is my formal submission for the coursework in Text
+Analytics, which involves calculating the entropy and cross-entropy of
+three literary texts: <em>The Great Gatsby</em> (En), <em>Faust</em>
+(De), and <em>Candide</em> (Fr). This analysis uses Excel for
+calculations of character distributions and entropy. NOTE: Chat gpt chat
+link in the end</p>
+<h2 id="definitions-and-mathematical-formulas">Definitions and
+Mathematical Formulas</h2>
+<h3 id="probability">Probability</h3>
+<p>The probability of each character in a text is calculated as:</p>
+<p>$$ P(x_i) = \frac{\text{Number of occurrences of } x_i}{\text{Total
+number of characters}} $$</p>
+<p>Where:</p>
+<ul>
+<li>$P(x_i)$ is the probability of character $x_i$.</li>
+<li>The total number of characters is the sum of occurrences for all
+characters in the text.</li>
+</ul>
+<h3 id="entropy">Entropy</h3>
+<p>Entropy quantifies the unpredictability or randomness of a
+distribution. The entropy $H(X)$ of a text $X$ is calculated as:</p>
+<p>$$ H(X) = -\sum_{i=1}^{n} P(x_i) \log_2 P(x_i) $$</p>
+<p>Where:</p>
+<ul>
+<li>$P(x_i)$ is the probability of encountering character $x_i$ in the
+text.</li>
+</ul>
+<h4 id="explanation-of-the-negative-sign-in-entropy">Explanation of the
+Negative Sign in Entropy</h4>
+<p>The negative sign in the entropy formula ensures that the entropy
+value remains positive. Since the logarithm (base 2) of any probability
+(a value between 0 and 1) is negative, multiplying by -1 converts the
+sum into a positive value. This positive value effectively represents
+the uncertainty or randomness inherent in the text's character
+distribution.</p>
+<h3 id="cross-entropy">Cross-Entropy</h3>
+<p>Cross-entropy measures the divergence between two probability
+distributions, $p$ and $q$, over the same alphabet $A$. The formula
+is:</p>
+<p>$$ H(p, q) = -\sum_{i=1}^{n} p(x_i) \log_2 q(x_i) $$</p>
+<p>Where:</p>
+<ul>
+<li>$p(x_i)$ is the true probability distribution (from one text).</li>
+<li>$q(x_i)$ is the estimated probability distribution (from another
+text).</li>
+</ul>
+<h4 id="application-of-cross-entropy">Application of Cross-Entropy</h4>
+<p>Cross-entropy helps us compare how well one text's character
+distribution serves as a model for another. For instance, the
+cross-entropy of <em>The Great Gatsby</em>'s character distribution when
+used as a model for <em>Faust</em> can be computed to understand how
+similar or different their character distributions are.</p>
+<h2 id="excel-implementation">Excel Implementation</h2>
+<p>The calculations were done using Excel for each of the following:</p>
+<ol>
+<li><p><strong>Character Count</strong>: For each of the texts, I
+calculated the frequency of all characters (including letters and
+punctuation marks) using the formula:</p>
+<pre class="excel"><code>=COUNTIF(range, character) / SUM(COUNTIF(range, unique_characters))</code></pre></li>
+<li><p><strong>Entropy Calculation</strong>: The entropy for each text
+was calculated by summing the individual entropies of all
+characters:</p>
+<pre class="excel"><code>= -SUM((COUNTIF(range, unique_characters)/total_characters) * LOG(COUNTIF(range, unique_characters)/total_characters, 2))</code></pre></li>
+<li><p><strong>Cross-Entropy Calculation</strong>: The cross-entropy
+between each pair of texts was calculated using:</p>
+<pre class="excel"><code>= -SUM((COUNTIF(range1, unique_characters1)/total_characters1) * LOG(COUNTIF(range2, unique_characters1)/total_characters2, 2))</code></pre></li>
+</ol>
+<h2 id="results">Results</h2>
+<p>The analysis included the following steps:</p>
+<ul>
+<li>Probabilities were calculated for each character in each text.</li>
+<li>Entropy values were computed for each text using the character
+distributions.</li>
+<li>Cross-entropy values were calculated between every pair of texts,
+helping assess the similarity between their character
+distributions.</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>This coursework applied entropy and cross-entropy principles to
+analyze three literary texts. The results provided insights into the
+unpredictability and informational efficiency of each text's character
+distribution. Furthermore, cross-entropy comparisons between different
+texts revealed how one text could model the character distribution of
+another.</p>
+<p><strong>Have a good read!</strong> ^-^</p>
+<hr />
+<blockquote>
+<p><strong>Disclaimer:</strong><br />
+The formulas presented in this document for use in Excel were generated
+by ChatGPT. <a
+href="https://chatgpt.com/share/67a2d44a-b994-8001-8376-5fa54002b22d">[Link]</a>
+The negative sign in the entropy formula is essential to ensure that the
+computed entropy remains positive, as the logarithm (base 2) of a
+probability (a number between 0 and 1) yields a negative value. If error
+had to be added to the formulaes in excel as sometimes i ran into
+division by zero errors when there was zero probability.</p>
+</blockquote>

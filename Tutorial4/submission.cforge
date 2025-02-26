@@ -1,0 +1,206 @@
+from cforge import Node, Workflow, DataNode, APINode, VisualizationNode
+import pandas as pd
+import matplotlib.pyplot as plt
+from typing import List, Dict
+import json
+
+class DataPreparationNode(Node):
+    def process(self, data: Dict[str, List[str]]) -> pd.DataFrame:
+        """
+        Prepare the data by converting lists of examples into a DataFrame
+        with appropriate labels
+        """
+        records = []
+        
+        # Process sarcastic tweets
+        for tweet in data['sarcastic_tweets']:
+            records.append({
+                'text': tweet,
+                'category': 'sarcasm',
+                'label': 1,
+                'type': 'tweet'
+            })
+            
+        # Process non-sarcastic tweets
+        for tweet in data['non_sarcastic_tweets']:
+            records.append({
+                'text': tweet,
+                'category': 'sarcasm',
+                'label': 0,
+                'type': 'tweet'
+            })
+            
+        # Process ironic metaphors
+        for metaphor in data['ironic_metaphors']:
+            records.append({
+                'text': metaphor,
+                'category': 'irony',
+                'label': 1,
+                'type': 'metaphor'
+            })
+            
+        # Process non-ironic metaphors
+        for metaphor in data['non_ironic_metaphors']:
+            records.append({
+                'text': metaphor,
+                'category': 'irony',
+                'label': 0,
+                'type': 'metaphor'
+            })
+            
+        # Process satirical headlines
+        for headline in data['satirical_headlines']:
+            records.append({
+                'text': headline,
+                'category': 'satire',
+                'label': 1,
+                'type': 'headline'
+            })
+            
+        # Process non-satirical headlines
+        for headline in data['non_satirical_headlines']:
+            records.append({
+                'text': headline,
+                'category': 'satire',
+                'label': 0,
+                'type': 'headline'
+            })
+            
+        return pd.DataFrame(records)
+
+class PromptConstructionNode(Node):
+    def process(self, df: pd.DataFrame) -> List[Dict]:
+        """
+        Construct prompts for each type of humor analysis
+        """
+        prompts = []
+        
+        for _, row in df.iterrows():
+            category = row['category']
+            text = row['text']
+            
+            if category == 'sarcasm':
+                prompt = {
+                    'text': f"Analyze if the following tweet is sarcastic. Tweet: '{text}' Respond with only 'yes' or 'no'.",
+                    'original_text': text,
+                    'category': category,
+                    'true_label': row['label']
+                }
+            elif category == 'irony':
+                prompt = {
+                    'text': f"Determine if the following metaphor is ironic. Metaphor: '{text}' Respond with only 'yes' or 'no'.",
+                    'original_text': text,
+                    'category': category,
+                    'true_label': row['label']
+                }
+            else:  # satire
+                prompt = {
+                    'text': f"Is this headline satirical? Headline: '{text}' Respond with only 'yes' or 'no'.",
+                    'original_text': text,
+                    'category': category,
+                    'true_label': row['label']
+                }
+            
+            prompts.append(prompt)
+            
+        return prompts
+
+class LLMTestingNode(APINode):
+    def __init__(self, api_key: str, model_name: str, provider: str):
+        super().__init__()
+        self.api_key = api_key
+        self.model_name = model_name
+        self.provider = provider
+        
+    def process(self, prompts: List[Dict]) -> List[Dict]:
+        """
+        Send prompts to LLM and collect responses
+        """
+        results = []
+        
+        for prompt in prompts:
+            # Simulate API call (replace with actual API calls)
+            response = self._call_llm_api(prompt['text'])
+            
+            result = {
+                'text': prompt['original_text'],
+                'category': prompt['category'],
+                'true_label': prompt['true_label'],
+                'predicted_label': 1 if response.lower() == 'yes' else 0,
+                'model': self.model_name,
+                'provider': self.provider
+            }
+            
+            results.append(result)
+            
+        return results
+    
+    def _call_llm_api(self, prompt: str) -> str:
+        """
+        Placeholder for actual API call implementation
+        """
+        # TODO: Implement actual API calls based on provider
+        pass
+
+class ResultsVisualizationNode(VisualizationNode):
+    def process(self, results: List[Dict]) -> None:
+        """
+        Create visualizations comparing LLM performance
+        """
+        df = pd.DataFrame(results)
+        
+        # Calculate accuracy per category and model
+        accuracy_df = df.groupby(['category', 'model']).apply(
+            lambda x: (x['true_label'] == x['predicted_label']).mean()
+        ).unstack()
+        
+        # Create bar plot
+        ax = accuracy_df.plot(
+            kind='bar',
+            figsize=(12, 6),
+            width=0.8
+        )
+        
+        plt.title('LLM Performance Comparison across Humor Dimensions')
+        plt.xlabel('Humor Category')
+        plt.ylabel('Accuracy')
+        plt.legend(title='Model')
+        plt.tight_layout()
+        
+        # Save plot
+        plt.savefig('llm_humor_performance.png')
+
+def create_workflow():
+    # Initialize workflow
+    workflow = Workflow("Humor Analysis")
+    
+    # Create nodes
+    data_prep = DataPreparationNode("Data Preparation")
+    prompt_construction = PromptConstructionNode("Prompt Construction")
+    
+    # Initialize LLM testing nodes
+    llm_nodes = [
+        LLMTestingNode("YOUR_HUGGINGFACE_KEY", "gpt2", "HuggingFace"),
+        LLMTestingNode("YOUR_GOOGLE_KEY", "palm2", "Google"),
+        LLMTestingNode("YOUR_OPENAI_KEY", "gpt-3.5-turbo", "OpenAI")
+    ]
+    
+    visualization = ResultsVisualizationNode("Results Visualization")
+    
+    # Connect nodes
+    workflow.connect(data_prep, prompt_construction)
+    
+    for llm_node in llm_nodes:
+        workflow.connect(prompt_construction, llm_node)
+        workflow.connect(llm_node, visualization)
+    
+    return workflow
+
+if __name__ == "__main__":
+    # Load data
+    with open('humor_data.json', 'r') as f:
+        data = json.load(f)
+    
+    # Create and run workflow
+    workflow = create_workflow()
+    workflow.run(data)
